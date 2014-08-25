@@ -35,7 +35,7 @@ module.exports = function(grunt) {
 
         opts.interaction = path.relative( process.cwd(), interaction );
         opts.testcase = testcase;
-console.log(opts);
+
         new WdCT(opts).then(function(){
           callback();
         }, function(err){
