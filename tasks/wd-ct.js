@@ -36,7 +36,7 @@ module.exports = function(grunt) {
         opts.interaction = path.relative( process.cwd(), interaction );
         opts.testcase = testcase;
 
-        grunt.log.info('Executing ['+testcase+']');
+        grunt.log.writeln('Executing ['+testcase+']');
         new WdCT(opts).then(function(){
           callback();
         }, function(err){
