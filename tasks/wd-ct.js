@@ -30,19 +30,25 @@ module.exports = function(grunt) {
               interaction: 'interaction.js',
               testcase: '*.xlsx'
             }, options),
-            interaction = findup(opts.interaction, {cwd: file}),
-            testcase = findup(opts.testcase, {cwd: file});
+            interaction = path.relative( process.cwd(), findup(opts.interaction, {cwd: file})),
+            testcases = grunt.file.expand({cwd: file}, opts.testcase);
 
-        opts.interaction = path.relative( process.cwd(), interaction );
-        opts.testcase = testcase;
+        async.eachSeries(testcases, function(testcase, callback){
+          testcase = path.join(file, testcase);
+          opts.interaction = interaction;
+          opts.testcase = testcase;
 
-        grunt.log.writeln('Executing ['+testcase+']');
-        new WdCT(opts).then(function(){
+          grunt.log.writeln('Executing ['+testcase+'] with ['+interaction+']');
+          new WdCT(opts).then(function(){
+            callback();
+          }, function(err){
+            grunt.log.error('Error on ['+testcase+'] with ['+interaction+']');
+            grunt.log.error(err);
+            done(false);
+          });
+
+        }, function(){
           callback();
-        }, function(err){
-          grunt.log.error('Error on ['+testcase+']');
-          grunt.log.error(err);
-          done(false);
         });
       }, function(){
         callback();
