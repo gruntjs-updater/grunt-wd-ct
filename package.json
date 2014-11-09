@@ -1,7 +1,7 @@
 {
   "name": "grunt-wd-ct",
   "description": "Execute combitorial testing with wd",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "homepage": "https://github.com/sideroad/grunt-wd-ct",
   "author": {
     "name": "sideroad",
