@@ -21,19 +21,35 @@ module.exports = function(grunt) {
         async = require('async'),
         _ = require('lodash'),
         findup = require('findup-sync'),
-        path = require('path');
+        path = require('path'),
+        parallel = options.parallel,
+        saucelabs = options.saucelabs,
+        files = this.files;
+
+    // Arguments will be use src instead of original src
+    if(this.args.length){
+      files = [{
+        src: this.args
+      }];
+    }
 
     // Iterate over all specified file groups.
-    async.eachSeries( this.files, function(f, callback) {
-      async.eachSeries(f.src, function(file, callback){
+    (parallel && saucelabs ? async.each : async.eachSeries).call( async, files, function(f, callback) {
+
+      (parallel && saucelabs ? async.each : async.eachSeries).call( async, f.src, function(file, callback){
         var opts = _.extend({
               interaction: 'interaction.js',
               testcase: '*.xlsx'
-            }, options),
+            }, options, {
+              debug: grunt.option('debug'),
+              info: grunt.option('info'),
+              error: grunt.option('error'),
+              force: grunt.option('force')
+            }),
             interaction = path.relative( process.cwd(), findup(opts.interaction, {cwd: file})),
             testcases = grunt.file.expand({cwd: file}, opts.testcase);
 
-        async.eachSeries(testcases, function(testcase, callback){
+        (parallel && saucelabs ? async.each : async.eachSeries).call( async, testcases, function(testcase, callback){
           testcase = path.join(file, testcase);
           opts.interaction = interaction;
           opts.testcase = testcase;

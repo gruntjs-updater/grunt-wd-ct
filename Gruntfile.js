@@ -24,7 +24,9 @@ module.exports = function(grunt) {
         options: {
           interaction: 'interaction.js',
           testcase: '*.csv',
-          debug: false
+          debug: false,
+          parallel: true,
+          saucelabs: true
         },
         src: ['test/fixtures/*']
       }
