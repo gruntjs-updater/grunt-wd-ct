@@ -109,9 +109,9 @@ module.exports = function(grunt) {
         callback(err);
       });
     }, function(err){
-      tap.write('# Pass: '+cnt.pass+'\n');
-      tap.write('# Fail: '+cnt.fail+'\n');
-      tap.write('1..'+seq+'\n');
+      tap.write('# Pass: '+cnt.pass+'\n'+
+                '# Fail: '+cnt.fail+'\n'+
+                '1..'+(seq-1)+'\n');
       tap.end();
       done(err);
     });
