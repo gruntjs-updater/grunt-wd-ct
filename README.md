@@ -1,5 +1,4 @@
 # grunt-wd-ct
-
 > Execute combitorial testing with wd
 
 ## Getting Started

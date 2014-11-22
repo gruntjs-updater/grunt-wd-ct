@@ -15,7 +15,7 @@ module.exports = function(grunt) {
 
     // Before generating any new files, remove any previously-created files.
     clean: {
-      tests: ['tmp'],
+      tests: ['tmp/test.tap'],
     },
 
     // Configuration to be run (and then tested).
@@ -25,8 +25,44 @@ module.exports = function(grunt) {
           interaction: 'interaction.js',
           testcase: '*.csv',
           debug: false,
+          browsers: [
+            {
+              browserName: 'internet explorer',
+              version: '8',
+              platform: 'Windows 7'
+            },
+            {
+              browserName: 'internet explorer',
+              version: '9',
+              platform: 'Windows 7'
+            },
+            {
+              browserName: 'internet explorer',
+              version: '10',
+              platform: 'Windows 7'
+            },
+            {
+              browserName: 'internet explorer',
+              version: '11',
+              platform: 'Windows 8.1'
+            },
+            {
+              browserName: 'Chrome',
+              platform: 'Windows 7'
+            },
+            {
+              browserName: 'Firefox',
+              platform: 'Windows 7'
+            },
+            {
+              browserName: 'Safari',
+              platform: 'Mac'
+            }
+          ],
           parallel: true,
-          saucelabs: true
+          saucelabs: true,
+          tap: 'tmp/test.tap',
+          build: new Date().getTime()
         },
         src: ['test/fixtures/*']
       }
@@ -39,6 +75,7 @@ module.exports = function(grunt) {
 
   // These plugins provide necessary tasks.
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-release');
 
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.

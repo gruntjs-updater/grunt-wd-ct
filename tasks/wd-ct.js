@@ -10,11 +10,7 @@
 
 module.exports = function(grunt) {
 
-  // Please see the Grunt documentation for more information regarding task
-  // creation: http://gruntjs.com/creating-tasks
-
   grunt.registerMultiTask('wdct', 'Execute combitorial testing with wd.', function() {
-    // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({}),
         done = this.async(),
         WdCT = require('wd-ct'),
@@ -22,9 +18,21 @@ module.exports = function(grunt) {
         _ = require('lodash'),
         findup = require('findup-sync'),
         path = require('path'),
-        parallel = options.parallel,
         saucelabs = options.saucelabs,
-        files = this.files;
+        files = this.files,
+        override = {},
+        fs = require('fs'),
+        tap = {write:function(){},end:function(){}},
+        seq = 1,
+        cnt = {
+          pass: 0,
+          fail: 0
+        };
+
+    if(options.tap) {
+      tap = fs.createWriteStream(options.tap);
+      tap.write('TAP version 13\n');
+    }
 
     // Arguments will be use src instead of original src
     if(this.args.length){
@@ -33,26 +41,58 @@ module.exports = function(grunt) {
       }];
     }
 
-    // Iterate over all specified file groups.
-    (parallel && saucelabs ? async.each : async.eachSeries).call( async, files, function(f, callback) {
+    if(grunt.option('info') !== undefined) {
+      override = grunt.option('info');
+    }
+    if(grunt.option('debug') !== undefined) {
+      override = grunt.option('debug');
+    }
+    if(grunt.option('error') !== undefined) {
+      override = grunt.option('error');
+    }
 
-      (parallel && saucelabs ? async.each : async.eachSeries).call( async, f.src, function(file, callback){
+    // Iterate over all specified file groups.
+    async.eachSeries( files, function(f, callback) {
+
+      async.eachSeries(f.src, function(file, callback){
         var opts = _.extend({
               interaction: 'interaction.js',
               testcase: '*.xlsx'
-            }, options, {
-              debug: grunt.option('debug'),
-              info: grunt.option('info'),
-              error: grunt.option('error'),
-              force: grunt.option('force')
-            }),
+            }, options, override),
             interaction = path.relative( process.cwd(), findup(opts.interaction, {cwd: file})),
             testcases = grunt.file.expand({cwd: file}, opts.testcase);
 
-        (parallel && saucelabs ? async.each : async.eachSeries).call( async, testcases, function(testcase, callback){
+        async.eachSeries( testcases, function(testcase, callback){
+          var fails = [];
           testcase = path.join(file, testcase);
           opts.interaction = interaction;
           opts.testcase = testcase;
+          opts.reporter = function(res){
+            if(!res.err) {
+              tap.write('ok '+seq+' - ' + testcase + ' - ' + interaction + ' ' +
+                        '['+res.command+'] '+
+                        '['+res.cap.platform+'-'+
+                            res.cap.browserName+'-'+
+                            res.cap.version+'] '+
+                        'row['+res.row+'] '+
+                        'col['+res.col+']\n');
+              seq++;
+              cnt.pass++;                
+            } else {
+              tap.write('not ok '+seq+' - ' + testcase + ' - ' + interaction + ' - '+res.command+'\n'+
+                         '  ---\n'+
+                         '    messeage: "Failed '+ res.command.replace(/\"/g, '\\"')+'\n'+
+                         '    dump: '+ res.message.replace(/\r?\n$/,'') + '\n'+
+                         '          platform - '+ res.cap.platform+'\n'+
+                         '          browser  - '+ res.cap.browserName+'\n'+
+                         '          version  - '+ res.cap.version+'\n'+
+                         '          row      - '+ res.row+'\n'+
+                         '          col      - '+ res.col+'\n'+
+                         '  ...\n');
+              seq++;
+              cnt.fail++;
+            }
+          };
 
           grunt.log.writeln('Executing ['+testcase+'] with ['+interaction+']');
           new WdCT(opts).then(function(){
@@ -60,17 +100,20 @@ module.exports = function(grunt) {
           }, function(err){
             grunt.log.error('Error on ['+testcase+'] with ['+interaction+']');
             grunt.log.error(err);
-            done(false);
+            callback(err);
           });
-
-        }, function(){
-          callback();
+        }, function(err){
+          callback(err);
         });
-      }, function(){
-        callback();
+      }, function(err){
+        callback(err);
       });
-    }, function(){
-      done();
+    }, function(err){
+      tap.write('# Pass: '+cnt.pass+'\n');
+      tap.write('# Fail: '+cnt.fail+'\n');
+      tap.write('1..'+seq+'\n');
+      tap.end();
+      done(err);
     });
   });
 
