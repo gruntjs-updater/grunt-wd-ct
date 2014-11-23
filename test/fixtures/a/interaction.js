@@ -13,7 +13,7 @@ module.exports = function(wd){
 			},
 			'should have title "sideroad (sideroad)"': function(){
 				return this.title()
-				           .should.eventually.equal('sideroad (sideroad) · GitHub');
+				           .should.eventually.equal('sideroad (sideroad) · GitHuba');
 			}
 		}
 	};

@@ -70,7 +70,7 @@ module.exports = function(grunt) {
           opts.reporter = function(res){
             if(!res.err) {
               tap.write('ok '+seq+' - ' + testcase + ' - ' + interaction + ' ' +
-                        '['+res.command+'] '+
+                        '['+res.command+'-'+res.val+'] '+
                         '['+res.cap.platform+'-'+
                             res.cap.browserName+'-'+
                             res.cap.version+'] '+
@@ -81,14 +81,15 @@ module.exports = function(grunt) {
             } else {
               tap.write('not ok '+seq+' - ' + testcase + ' - ' + interaction + ' - '+res.command+'\n'+
                          '  ---\n'+
-                         '    messeage: "Failed '+ res.command.replace(/\"/g, '\\"')+'\n'+
-                         '    dump: '+ res.message.replace(/\r?\n$/,'') + '\n'+
+                         '    messeage: "Failed ['+ (res.command+'-'+res.val).replace(/\"/g, '\\"')+']"\n'+
+                         '    dump: '+ (res.err.message||'').replace(/\r?\n$/,'') + '\n'+
                          '          platform - '+ res.cap.platform+'\n'+
                          '          browser  - '+ res.cap.browserName+'\n'+
                          '          version  - '+ res.cap.version+'\n'+
                          '          row      - '+ res.row+'\n'+
                          '          col      - '+ res.col+'\n'+
-                         '  ...\n');
+                         '  ...\n'+
+                         (res.bailout ? 'Bail out!\n': ''));
               seq++;
               cnt.fail++;
             }

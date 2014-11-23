@@ -20,27 +20,12 @@ module.exports = function(grunt) {
 
     // Configuration to be run (and then tested).
     'wdct': {
-      main: {
+      bailout: {
         options: {
           interaction: 'interaction.js',
           testcase: '*.csv',
-          debug: false,
+          debug: 'tmp/debug.log',
           browsers: [
-            {
-              browserName: 'internet explorer',
-              version: '8',
-              platform: 'Windows 7'
-            },
-            {
-              browserName: 'internet explorer',
-              version: '9',
-              platform: 'Windows 7'
-            },
-            {
-              browserName: 'internet explorer',
-              version: '10',
-              platform: 'Windows 7'
-            },
             {
               browserName: 'internet explorer',
               version: '11',
@@ -49,20 +34,36 @@ module.exports = function(grunt) {
             {
               browserName: 'Chrome',
               platform: 'Windows 7'
+            }
+          ],
+          parallel: true,
+          saucelabs: true,
+          tap: 'tmp/test-bailout.tap',
+          build: new Date().getTime()
+        },
+        src: ['test/fixtures/*']
+      },
+      force: {
+        options: {
+          interaction: 'interaction.js',
+          testcase: '*.csv',
+          debug: 'tmp/debug.log',
+          browsers: [
+            {
+              browserName: 'internet explorer',
+              version: '11',
+              platform: 'Windows 8.1'
             },
             {
-              browserName: 'Firefox',
+              browserName: 'Chrome',
               platform: 'Windows 7'
-            },
-            {
-              browserName: 'Safari',
-              platform: 'Mac'
             }
           ],
           parallel: true,
           saucelabs: true,
           tap: 'tmp/test.tap',
-          build: new Date().getTime()
+          build: new Date().getTime(),
+          force: true
         },
         src: ['test/fixtures/*']
       }
