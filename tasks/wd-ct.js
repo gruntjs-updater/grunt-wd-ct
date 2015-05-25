@@ -82,12 +82,12 @@ module.exports = function(grunt) {
               tap.write('not ok '+seq+' - ' + testcase + ' - ' + interaction + ' - '+res.command+'\n'+
                          '  ---\n'+
                          '    messeage: "Failed ['+ (res.command+'-'+res.val).replace(/\"/g, '\\"').replace(/(\r?\n)|\:/g, '')+']"\n'+
-                         '    dump: "'+ (res.err.message||'').replace(/\"/g, '\\"').replace(/(\r?\n)|\:/,'') + '"\n'+
-                         '      platform: "'+ res.cap.platform+'"\n'+
-                         '      browser: "'+ res.cap.browserName+'"\n'+
-                         '      version: "'+ res.cap.version+'"\n'+
-                         '      row: "'+ res.row+'"\n'+
-                         '      col: "'+ res.col+'"\n'+
+                         '    dump: "'+ (res.err.message||'').replace(/\"/g, '\\"').replace(/(\r?\n)|\:/g,'') + '"\n'+
+                         '    platform: "'+ res.cap.platform+'"\n'+
+                         '    browser: "'+ res.cap.browserName+'"\n'+
+                         '    version: "'+ res.cap.version+'"\n'+
+                         '    row: "'+ res.row+'"\n'+
+                         '    col: "'+ res.col+'"\n'+
                          '  ...\n'+
                          (res.bailout ? 'Bail out!\n': ''));
               seq++;
