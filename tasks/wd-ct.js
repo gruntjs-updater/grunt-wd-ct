@@ -81,8 +81,8 @@ module.exports = function(grunt) {
             } else {
               tap.write('not ok '+seq+' - ' + testcase + ' - ' + interaction + ' - '+res.command+'\n'+
                          '  ---\n'+
-                         '    messeage: "Failed ['+ (res.command+'-'+res.val).replace(/\"/g, '\\"').replace(/(\r?\n)|\:/g, '')+']"\n'+
-                         '    dump: "'+ (res.err.message||'').replace(/\"/g, '\\"').replace(/(\r?\n)|\:/g,'') + '"\n'+
+                         '    messeage: "Failed ['+ (res.command+'-'+res.val).replace(/\"/g, '\'').replace(/(\r?\n)|\:/g, '')+']"\n'+
+                         '    dump: "'+ (res.err.message||'').replace(/\"/g, '\'').replace(/(\r?\n)|\:/g,'') + '"\n'+
                          '    platform: "'+ res.cap.platform+'"\n'+
                          '    browser: "'+ res.cap.browserName+'"\n'+
                          '    version: "'+ res.cap.version+'"\n'+
