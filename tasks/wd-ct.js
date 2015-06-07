@@ -11,7 +11,10 @@
 module.exports = function(grunt) {
 
   grunt.registerMultiTask('wdct', 'Execute combitorial testing with wd.', function() {
-    var options = this.options({}),
+    var options = this.options({
+          preserveFails: true,
+          fails: 'lastfails.txt'
+        }),
         done = this.async(),
         WdCT = require('wd-ct'),
         async = require('async'),
@@ -23,6 +26,7 @@ module.exports = function(grunt) {
         override = {},
         fs = require('fs'),
         tap = {write:function(){},end:function(){}},
+        fails = {write:function(){},end:function(){}},
         seq = 1,
         cnt = {
           pass: 0,
@@ -51,20 +55,44 @@ module.exports = function(grunt) {
       override = grunt.option('error');
     }
 
+    if(grunt.option('lastfails') !== undefined ) {
+      files = fs.existsSync(options.fails) && fs.readFileSync(options.fails, 'utf8').split('\n').filter(function(line){
+        return line ? true : false;
+      }).map(function(line){
+        return {
+          interaction: line.split(':')[0],
+          src: [path.dirname( line.split(':')[1] )] ,
+          testcase: [ path.basename( line.split(':')[1] ) ],
+          rowNum: Number(line.split(':')[2])
+        };
+      }) || [];
+
+    }
+
+    if(fs.existsSync(options.fails)) {
+      fs.unlinkSync(options.fails);
+    }
+
+    if(options.preserveFails) {
+      fails = fs.createWriteStream(options.fails);
+    }
+
+
     // Iterate over all specified file groups.
     async.eachSeries( files, function(f, callback) {
 
       async.eachSeries(f.src, function(file, callback){
         var opts = _.extend({
               interaction: 'interaction.js',
-              testcase: '*.xlsx'
+              testcase: '*.xlsx',
+              rowNum: f.rowNum
             }, options, override),
-            interaction = path.relative( process.cwd(), findup(opts.interaction, {cwd: file})),
-            testcases = grunt.file.expand({cwd: file}, opts.testcase);
-
+            interaction = f.interaction ? f.interaction : 
+                                          path.relative( process.cwd(), findup( opts.interaction, {cwd: file})),
+            testcases = f.testcase ? f.testcase : grunt.file.expand({cwd: file}, opts.testcase);
         async.eachSeries( testcases, function(testcase, callback){
-          var fails = [];
           testcase = path.join(file, testcase);
+
           opts.interaction = interaction;
           opts.testcase = testcase;
           opts.reporter = function(res){
@@ -92,10 +120,12 @@ module.exports = function(grunt) {
                          (res.bailout ? 'Bail out!\n': ''));
               seq++;
               cnt.fail++;
+              fails.write(interaction+':'+testcase+':'+res.row+'\n');
             }
           };
 
           grunt.log.writeln('Executing ['+testcase+'] with ['+interaction+']');
+
           new WdCT(opts).then(function(){
             callback();
           }, function(err){
@@ -114,6 +144,7 @@ module.exports = function(grunt) {
                 '# Fail: '+cnt.fail+'\n'+
                 '1..'+(seq-1)+'\n');
       tap.end();
+      fails.end();
       done(err);
     });
   });
